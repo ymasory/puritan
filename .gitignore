@@ -1,0 +1,13 @@
+.DS_Store
+*~
+.ensime
+.project
+.classpath
+*.class
+out
+err
+
+target/
+lib_managed/
+src_managed/
+project/boot/

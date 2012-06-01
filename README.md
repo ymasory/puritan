@@ -1,4 +1,4 @@
-# puritan, referentially transparent io for Scala #
+# puritan: referentially transparent io for Scala #
 Requires scalaz 7, currently in SNAPSHOT.
 
 ## Build ##

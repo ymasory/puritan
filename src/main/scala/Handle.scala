@@ -21,11 +21,32 @@ class Handle(private val f: File) extends Serializable with Comparable[Handle] {
   //TODO createTempFile1/2
   //TODO deleteOnExit
 
+  /* ########## custom ########## */
+  /*
+  def extension: Option[String] = ""
+  def sansExtension: String = ""
+  def basename: String = ""
+  */
+  /*
+  def find: IO[List[File]] = Nil.pure[IO]
+  def findFiltered(filter: File => Boolean): IO[List[File]] = Nil.pure[IO]
+  def findByGlob(glob: String): IO[List[File]] = Nil.pure[IO]
+  def findByGlobFiltered(
+    glob: String, filter: File => Boolean
+  ): IO[List[File]] = Nil.pure[IO]
+  def findByRegex(regex: String): IO[List[File]] = Nil.pure[IO]
+  def findByRegexFiltered(
+    regex: String, filter: File => Boolean
+  ): IO[List[File]] = Nil.pure[IO]
+  */
+
   /* ########## pure Java methods, at least in OpenJDK ########## */
   def getAbsoluteFile: File = f.getAbsoluteFile
-  def getAbsolutePath: String = f.getAbsolutePath
+  //not implementing, no String methods when File works
+  // def getAbsolutePath: String = f.getAbsolutePath
   def getName: String = f.getName
-  def getParent: String = f.getParent
+  //not implementing, no String methods when File works
+  // def getParent: String = f.getParent
   def getParentFile: File = f.getParentFile
   def getPath: String = f.getPath
   def equals(that: Handle): Boolean = f equals that.f
@@ -46,7 +67,8 @@ class Handle(private val f: File) extends Serializable with Comparable[Handle] {
   }
   def exists: IO[Boolean] = IO { f.exists }
   def getCanonicalFile: IO[File] = IO { f.getCanonicalFile }
-  def getCanonicalPath: IO[String] = IO { f.getCanonicalPath }
+  //not implementing, no String methods when File works
+  // def getCanonicalPath: IO[String] = IO { f.getCanonicalPath }
   def getFreeSpace: IO[Long] = IO { f.getFreeSpace }
   def getTotalSpace: IO[Long] = IO { f.getTotalSpace }
   def getUsableSpace: IO[Long] = IO { f.getUsableSpace }
@@ -55,7 +77,8 @@ class Handle(private val f: File) extends Serializable with Comparable[Handle] {
   def isHidden: IO[Boolean] = IO { f.isHidden }
   def lastModified: IO[Long] = IO { f.lastModified }
   def length: IO[Long] = IO { f.length }
-  def list: IO[List[String]] = IO { f.list.toList }
+  //not implementing, no String methods when File works
+  // def list: IO[List[String]] = IO { f.list.toList }
   def listFiles: IO[List[File]] = IO { f.listFiles.toList }
   def mkdir: IO[Unit] = {
     val msg = "could not create directory %s" format angled(f)

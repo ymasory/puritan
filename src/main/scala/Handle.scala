@@ -1,4 +1,4 @@
-package com.yuvimasory
+package com.yuvimasory.puritan
 
 import java.io.File
 import java.net.URI
@@ -10,116 +10,119 @@ import scalaz.Ordering.{ EQ, GT, LT }
 import scalaz.effect.IO
 import scalaz.effect.IO.io
 
-class Handle(private val file: File) extends AnyRef
-  with Serializable 
-  with Comparable[Handle] {
+case class HandleOperationException(msg: String) extends RuntimeException(msg)
 
+sealed trait Handle extends Serializable with Comparable[Handle] {
+  val f: File
+  override def compareTo(that: Handle): Int = f compareTo that.f
+  override def hashCode: Int = f.hashCode
+  override def toString: String = f.toString
+}
+
+private[puritan] trait JdkHandleFunctions extends Handle {
   /* ########## difficult semantics for now ########## */
   //TODO createTempFile1/2
   //TODO deleteOnExit
 
   /* ########## pure Java methods, at least in OpenJDK ########## */
-  def getAbsoluteFile: File = file.getAbsoluteFile
-  def getAbsolutePath: String = file.getAbsolutePath
-  def getName: String = file.getName
-  def getParent: String = file.getParent
-  def getParentFile: File = file.getParentFile
-  def getPath: String = file.getPath
-  def equals(that: Handle): Boolean = file equals that.file
-  def isAbsolute: Boolean = file.isAbsolute
-  def toURI: URI = file.toURI
-  override def hashCode: Int = file.hashCode
-  override def toString: String = file.toString
+  def getAbsoluteFile: File = f.getAbsoluteFile
+  def getAbsolutePath: String = f.getAbsolutePath
+  def getName: String = f.getName
+  def getParent: String = f.getParent
+  def getParentFile: File = f.getParentFile
+  def getPath: String = f.getPath
+  def equals(that: Handle): Boolean = f equals that.f
+  def isAbsolute: Boolean = f.isAbsolute
+  def toURI: URI = f.toURI
 
   /* ########## impure Java methods ########## */
-  def canExecute: IO[Boolean] = IO { file.canExecute }
-  def canRead: IO[Boolean] = IO { file.canRead }
-  def canWrite: IO[Boolean] = IO { file.canWrite }
+  def canExecute: IO[Boolean] = IO { f.canExecute }
+  def canRead: IO[Boolean] = IO { f.canRead }
+  def canWrite: IO[Boolean] = IO { f.canWrite }
   def createNewFile: IO[Unit] = {
-    val msg = "could not create new file %s" format angled(file)
-    requireSuccess(msg) { file createNewFile() }
+    val msg = "could not create new file %s" format angled(f)
+    requireSuccess(msg) { f createNewFile() }
   }
-  override def compareTo(that: Handle): Int = file compareTo that.file
   def delete: IO[Unit] = {
-    def msg = "could not delete file %s" format angled(file)
-    requireSuccess(msg) { file delete() }
+    def msg = "could not delete file %s" format angled(f)
+    requireSuccess(msg) { f delete() }
   }
-  def exists: IO[Boolean] = IO { file.exists }
-  def getCanonicalFile: IO[File] = IO { file.getCanonicalFile }
-  def getCanonicalPath: IO[String] = IO { file.getCanonicalPath }
-  def getFreeSpace: IO[Long] = IO { file.getFreeSpace }
-  def getTotalSpace: IO[Long] = IO { file.getTotalSpace }
-  def getUsableSpace: IO[Long] = IO { file.getUsableSpace }
-  def isDirectory: IO[Boolean] = IO { file.isAbsolute }
-  def isFile: IO[Boolean] = IO { file.isFile }
-  def isHidden: IO[Boolean] = IO { file.isHidden }
-  def lastModified: IO[Long] = IO { file.lastModified }
-  def length: IO[Long] = IO { file.length }
-  def list: IO[List[String]] = IO { file.list.toList }
-  def listFiles: IO[List[File]] = IO { file.listFiles.toList }
+  def exists: IO[Boolean] = IO { f.exists }
+  def getCanonicalFile: IO[File] = IO { f.getCanonicalFile }
+  def getCanonicalPath: IO[String] = IO { f.getCanonicalPath }
+  def getFreeSpace: IO[Long] = IO { f.getFreeSpace }
+  def getTotalSpace: IO[Long] = IO { f.getTotalSpace }
+  def getUsableSpace: IO[Long] = IO { f.getUsableSpace }
+  def isDirectory: IO[Boolean] = IO { f.isAbsolute }
+  def isFile: IO[Boolean] = IO { f.isFile }
+  def isHidden: IO[Boolean] = IO { f.isHidden }
+  def lastModified: IO[Long] = IO { f.lastModified }
+  def length: IO[Long] = IO { f.length }
+  def list: IO[List[String]] = IO { f.list.toList }
+  def listFiles: IO[List[File]] = IO { f.listFiles.toList }
   def mkdir: IO[Unit] = {
-    val msg = "could not create directory %s" format angled(file)
-    requireSuccess(msg) { file mkdir() }
+    val msg = "could not create directory %s" format angled(f)
+    requireSuccess(msg) { f mkdir() }
   }
   def mkdirs: IO[Unit] = {
-    val msg = "could not create directory (tree) %s" format angled(file)
-    requireSuccess(msg) { file.mkdirs }
+    val msg = "could not create directory (tree) %s" format angled(f)
+    requireSuccess(msg) { f mkdirs() }
   }
   def renameTo(dest: File): IO[Unit] = {
-    val msg = "could not rename %s to %s" format (angled(file), angled(dest))
-    requireSuccess(msg) { file renameTo dest }
+    val msg = "could not rename %s to %s" format (angled(f), angled(dest))
+    requireSuccess(msg) { f renameTo dest }
   }
   def setExecutable(executable: Boolean): IO[Unit] = {
     val msg = "could not set %s to executable state %s" format (
-      angled(file), quoted(executable)
+      angled(f), quoted(executable)
     )
-    requireSuccess(msg) { file setExecutable executable }
+    requireSuccess(msg) { f setExecutable executable }
   }
   def setExecutableOwnerOnly(executable: Boolean): IO[Unit] = {
     val msg = (
       "could not set %s to executable state %s for owner only" format (
-        angled(file), quoted(executable)
+        angled(f), quoted(executable)
       )
     )
-    requireSuccess(msg) { file setExecutable (executable, true) }
+    requireSuccess(msg) { f setExecutable (executable, true) }
   }
   def setLastModified(time: Long): IO[Unit] = {
     val msg = "could not set last modified %s on file %s" format (
-      time, angled(file)
+      time, angled(f)
     )
-    requireSuccess(msg) { file setLastModified time }
+    requireSuccess(msg) { f setLastModified time }
   }
   def setReadable(readable: Boolean): IO[Unit] = {
     val msg = "could not file %s to readable state %s" format (
-      angled(file), quoted(readable)
+      angled(f), quoted(readable)
     )
-    requireSuccess(msg) { file setReadable readable }
+    requireSuccess(msg) { f setReadable readable }
   }
   def setReadableOwnerOnly(readable: Boolean): IO[Unit] = {
     val msg = (
       "could not file %s to readable state %s for owner only" format (
-        angled(file), quoted(readable)
+        angled(f), quoted(readable)
       )
     )
-    requireSuccess(msg) { file setReadable (readable, true) }
+    requireSuccess(msg) { f setReadable (readable, true) }
   }
   def setReadOnly: IO[Unit] = {
-    val msg = "could not file %s to read-only" format angled(file)
-    requireSuccess(msg) { file setReadOnly() }
+    val msg = "could not file %s to read-only" format angled(f)
+    requireSuccess(msg) { f setReadOnly() }
   }
   def setWritable(writable: Boolean): IO[Unit] = {
     val msg = "could not file %s to writable state %s" format (
-      angled(file), quoted(writable)
+      angled(f), quoted(writable)
     )
-    requireSuccess(msg) { file setWritable writable }
+    requireSuccess(msg) { f setWritable writable }
   }
   def setWritableOwnerOnly(writable: Boolean): IO[Unit] = {
     val msg = (
       "could not file %s to writable state %s for owner only" format (
-        angled(file), quoted(writable)
+        angled(f), quoted(writable)
       )
     )
-    requireSuccess(msg) { file setWritable (writable, true) }
+    requireSuccess(msg) { f setWritable (writable, true) }
   }
 
   /* ########## not implementing ########## */
@@ -133,12 +136,19 @@ class Handle(private val file: File) extends AnyRef
     IO { if (bool == false) throw HandleOperationException(msg) }
 }
 
-case class HandleOperationException(msg: String) extends RuntimeException(msg)
+private[puritan] trait CommonsHandleFunctions extends Handle {
+}
 
 object Handle {
-  def fromFile(file: File) = new Handle(file)
+  /* #### "static" functions #### */
   def listRoots: IO[List[File]] = IO { (File listRoots()).toList }
 
+  /* #### conversions #### */
+  def fromFile(file: File): Handle = new Handle {
+    override val f = file
+  }
+
+  /* #### typeclass instances ##### */
   implicit def handleHasOrder: Order[Handle] = new Order[Handle] {
     override def order(lhs: Handle, rhs: Handle): Ordering = {
       val res = lhs compareTo rhs

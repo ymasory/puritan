@@ -141,8 +141,10 @@ object Handle {
   /* #### typeclass instances ##### */
   implicit def handleHasOrder: Order[Handle] = new Order[Handle] {
     override def order(lhs: Handle, rhs: Handle): Ordering = {
+      import scalaz.std.anyVal.intInstance
+      import scalaz.syntax.equal.ToEqualOps
       val res = lhs compareTo rhs
-      if (res < 0) LT else if (res == 0) EQ else GT //FIXME ==
+      if (res < 0) LT else if (res === 0) EQ else GT
     }
     override def equalIsNatural = true
   }

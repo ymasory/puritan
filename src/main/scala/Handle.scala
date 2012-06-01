@@ -3,8 +3,6 @@ package com.yuvimasory.puritan
 import java.io.File
 import java.net.URI
 
-import scala.{ Ordering => SOrdering }
-
 import scalaz.{ Equal, Order, Ordering, Show }
 import scalaz.Ordering.{ EQ, GT, LT }
 import scalaz.effect.IO
@@ -12,14 +10,13 @@ import scalaz.effect.IO.io
 
 case class HandleOperationException(msg: String) extends RuntimeException(msg)
 
-sealed trait Handle extends Serializable with Comparable[Handle] {
-  val f: File
+class Handle(private val f: File) extends Serializable with Comparable[Handle] {
+
+  /* #### subtyping-related, so no Java File functionality is lost. #### */
   override def compareTo(that: Handle): Int = f compareTo that.f
   override def hashCode: Int = f.hashCode
   override def toString: String = f.toString
-}
 
-private[puritan] trait JdkHandleFunctions extends Handle {
   /* ########## difficult semantics for now ########## */
   //TODO createTempFile1/2
   //TODO deleteOnExit
@@ -136,17 +133,10 @@ private[puritan] trait JdkHandleFunctions extends Handle {
     IO { if (bool == false) throw HandleOperationException(msg) }
 }
 
-private[puritan] trait CommonsHandleFunctions extends Handle {
-}
-
 object Handle {
-  /* #### "static" functions #### */
-  def listRoots: IO[List[File]] = IO { (File listRoots()).toList }
 
   /* #### conversions #### */
-  def fromFile(file: File): Handle = new Handle {
-    override val f = file
-  }
+  implicit def fileToHandle(f: File): Handle = new Handle(f)
 
   /* #### typeclass instances ##### */
   implicit def handleHasOrder: Order[Handle] = new Order[Handle] {

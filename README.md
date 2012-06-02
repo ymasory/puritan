@@ -24,7 +24,7 @@ sbt test # MUST USE SBT 0.11.3!!
 
 ## Goals (for the future ... not there yet) ##
 - Puritan is made up of **only referentially transparent functions**, whether those functions are public or not.
-- Puritan uses only the most primitive impure functions available on the JVM.
+- Puritan uses **only the most primitive impure functions available** on the JVM.
 For example, `read` not `readLine`.
 Such JDK primitive functions always have `native` in their signature.
 - Puritan tightly integrates with Scalaz 7's types.

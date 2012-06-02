@@ -1,5 +1,5 @@
-![Puritan](https://github.com/downloads/ymasory/puritan/scarlet-letter.jpg)
 # Puritan: Referentially Transparent IO for Scala #
+![Puritan](https://github.com/downloads/ymasory/puritan/scarlet-letter.jpg)
 
 ## About ##
 It's tough using `scalaz.IO` in the impure JVM environment.

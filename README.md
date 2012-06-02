@@ -10,7 +10,8 @@ nicely integrated with Scalaz 7.
 - Puritan is made up of **only referentially transparent functions**, whether those functions are public or not.
 - Puritan uses **only the most primitive impure functions available** on the JVM.
 For example, `read` not `readLine`.
-Such JDK primitive functions always have `native` in their signature.
+Such JDK primitive functions often have `native` in their signature, or cannot
+be implemented using only public JDK functions. */
 - Puritan tightly integrates with Scalaz 7's types.
 - Puritan organizes code and modules similarly to Scalaz 7.
 - Puritan relies only on JDK 6, Scala 2.9 and Scalaz 7.

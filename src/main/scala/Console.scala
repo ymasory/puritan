@@ -1,5 +1,6 @@
 package com.yuvimasory.puritan
 
+import scalaz.Show
 import scalaz.effect.IO
 
 object Console extends Console

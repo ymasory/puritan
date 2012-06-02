@@ -7,114 +7,123 @@ import scalaz.{ Equal, Order, Ordering, Show }
 import scalaz.Ordering.{ EQ, GT, LT }
 import scalaz.effect.IO
 
+/** Pure wrapper for exceptions thrown by `java.io.File` methods that return
+  * a boolean to indicate success or failure. */
 case class PureFileOperationException(msg: String) extends RuntimeException(msg)
 
-class PureFile(private val f: File)
-  extends Serializable with Comparable[PureFile] {
+/** Pure wrapper for `java.io.File`. */
+sealed trait PureFile {
+
+  import PureFile.pureFile
+
+  val javaFile: File
 
   /* #### subtyping-related, so no Java File functionality is lost. #### */
-  override def compareTo(that: PureFile): Int = f compareTo that.f
-  override def hashCode: Int = f.hashCode
-  override def toString: String = f.toString
+  override def hashCode: Int = javaFile.hashCode
+  override def toString: String = javaFile.toString
+  override def equals(that: AnyRef): Boolean = TODO //canEqual
 
   /* ########## pure Java methods, at least in OpenJDK ########## */
-  def getAbsoluteFile: PureFile = f.getAbsoluteFile
-  def getName: String = f.getName
-  def getParentFile: PureFile = f.getParentFile
-  def getPath: String = f.getPath
-  def equals(that: PureFile): Boolean = f equals that.f
-  def isAbsolute: Boolean = f.isAbsolute
-  def toURI: URI = f.toURI
+  def absolute: PureFile = javaFile.getAbsoluteFile
+  def name: String = javaFile.getName
+  def parent: PureFile = javaFile.getParentFile
+  def path: String = javaFile.getPath
+  def isAbsolute: Boolean = javaFile.isAbsolute
+  def toUri: URI = javaFile.toURI
 
   /* ########## impure Java methods ########## */
-  def canExecute: IO[Boolean] = IO { f.canExecute }
-  def canRead: IO[Boolean] = IO { f.canRead }
-  def canWrite: IO[Boolean] = IO { f.canWrite }
-  def createNewFile: IO[Unit] = {
-    val msg = "could not create new file %s" format angled(f)
-    requireSuccess(msg) { f createNewFile() }
+  def canExecute: IO[Boolean] = IO { javaFile.canExecute }
+  def canRead: IO[Boolean] = IO { javaFile.canRead }
+  def canWrite: IO[Boolean] = IO { javaFile.canWrite }
+  def exists: IO[Boolean] = IO { javaFile.exists }
+  def isDirectory: IO[Boolean] = IO { javaFile.isAbsolute }
+  def isRegularFile: IO[Boolean] = IO { javaFile.isFile }
+  def isHidden: IO[Boolean] = IO { javaFile.isHidden }
+
+  def canonical: IO[PureFile] = IO { javaFile.getCanonicalFile }
+  def listFiles: IO[List[PureFile]] = IO {
+    javaFile.listFiles.toList.map { pureFile(_) }
+  }
+
+
+  def freeSpace: IO[Long] = IO { javaFile.getFreeSpace }
+  def totalSpace: IO[Long] = IO { javaFile.getTotalSpace }
+  def usableSpace: IO[Long] = IO { javaFile.getUsableSpace }
+  def lastModified: IO[Long] = IO { javaFile.lastModified }
+  def length: IO[Long] = IO { javaFile.length }
+
+
+  def changeLastModified(time: Long): IO[Unit] = {
+    val msg = "could not set last modified %s on file %s" format (
+      time, angled(javaFile)
+    )
+    requireSuccess(msg) { javaFile setLastModified time }
+  }
+  def createRegularFile: IO[Unit] = {
+    val msg = "could not create new file %s" format angled(javaFile)
+    requireSuccess(msg) { javaFile createNewFile() }
   }
   def delete: IO[Unit] = {
-    def msg = "could not delete file %s" format angled(f)
-    requireSuccess(msg) { f delete() }
+    def msg = "could not delete file %s" format angled(javaFile)
+    requireSuccess(msg) { javaFile delete() }
   }
-  def exists: IO[Boolean] = IO { f.exists }
-  def getCanonicalFile: IO[File] = IO { f.getCanonicalFile }
-  def getFreeSpace: IO[Long] = IO { f.getFreeSpace }
-  def getTotalSpace: IO[Long] = IO { f.getTotalSpace }
-  def getUsableSpace: IO[Long] = IO { f.getUsableSpace }
-  def isDirectory: IO[Boolean] = IO { f.isAbsolute }
-  def isFile: IO[Boolean] = IO { f.isFile }
-  def isHidden: IO[Boolean] = IO { f.isHidden }
-  def lastModified: IO[Long] = IO { f.lastModified }
-  def length: IO[Long] = IO { f.length }
-  def listFiles: IO[List[PureFile]] = IO {
-    import PureFile.fileToPureFile
-    f.listFiles.toList.map { fileToPureFile(_) }
-  }
-  def mkdir: IO[Unit] = {
-    val msg = "could not create directory %s" format angled(f)
-    requireSuccess(msg) { f mkdir() }
-  }
-  def mkdirs: IO[Unit] = {
-    val msg = "could not create directory (tree) %s" format angled(f)
-    requireSuccess(msg) { f mkdirs() }
-  }
-  def renameTo(dest: PureFile): IO[Unit] = {
-    val msg = "could not rename %s to %s" format (angled(f), angled(dest))
-    requireSuccess(msg) { f renameTo dest.f }
-  }
-  def setExecutable(executable: Boolean): IO[Unit] = {
+  def makeExecutable(executable: Boolean): IO[Unit] = {
     val msg = "could not set %s to executable state %s" format (
-      angled(f), quoted(executable)
+      angled(javaFile), quoted(executable)
     )
-    requireSuccess(msg) { f setExecutable executable }
+    requireSuccess(msg) { javaFile setExecutable executable }
   }
-  def setExecutableOwnerOnly(executable: Boolean): IO[Unit] = {
-    val msg = (
-      "could not set %s to executable state %s for owner only" format (
-        angled(f), quoted(executable)
-      )
-    )
-    requireSuccess(msg) { f setExecutable (executable, true) }
-  }
-  def setLastModified(time: Long): IO[Unit] = {
-    val msg = "could not set last modified %s on file %s" format (
-      time, angled(f)
-    )
-    requireSuccess(msg) { f setLastModified time }
-  }
-  def setReadable(readable: Boolean): IO[Unit] = {
+  def makeReadable(readable: Boolean): IO[Unit] = {
     val msg = "could not file %s to readable state %s" format (
-      angled(f), quoted(readable)
+      angled(javaFile), quoted(readable)
     )
-    requireSuccess(msg) { f setReadable readable }
+    requireSuccess(msg) { javaFile setReadable readable }
   }
-  def setReadableOwnerOnly(readable: Boolean): IO[Unit] = {
+  def makeReadableByOwnerOnly(readable: Boolean): IO[Unit] = {
     val msg = (
       "could not file %s to readable state %s for owner only" format (
-        angled(f), quoted(readable)
+        angled(javaFile), quoted(readable)
       )
     )
-    requireSuccess(msg) { f setReadable (readable, true) }
+    requireSuccess(msg) { javaFile setReadable (readable, true) }
   }
-  def setReadOnly: IO[Unit] = {
-    val msg = "could not file %s to read-only" format angled(f)
-    requireSuccess(msg) { f setReadOnly() }
+  def makeReadOnly: IO[Unit] = {
+    val msg = "could not file %s to read-only" format angled(javaFile)
+    requireSuccess(msg) { javaFile setReadOnly() }
   }
-  def setWritable(writable: Boolean): IO[Unit] = {
+  def makeWritable(writable: Boolean): IO[Unit] = {
     val msg = "could not file %s to writable state %s" format (
-      angled(f), quoted(writable)
+      angled(javaFile), quoted(writable)
     )
-    requireSuccess(msg) { f setWritable writable }
+    requireSuccess(msg) { javaFile setWritable writable }
   }
-  def setWritableOwnerOnly(writable: Boolean): IO[Unit] = {
+  def makeWritableByOwnerOnly(writable: Boolean): IO[Unit] = {
     val msg = (
       "could not file %s to writable state %s for owner only" format (
-        angled(f), quoted(writable)
+        angled(javaFile), quoted(writable)
       )
     )
-    requireSuccess(msg) { f setWritable (writable, true) }
+    requireSuccess(msg) { javaFile setWritable (writable, true) }
+  }
+  def makeExecutableByOwnerOnly(executable: Boolean): IO[Unit] = {
+    val msg = (
+      "could not set %s to executable state %s for owner only" format (
+        angled(javaFile), quoted(executable)
+      )
+    )
+    requireSuccess(msg) { javaFile setExecutable (executable, true) }
+  }
+  def mkdir: IO[Unit] = {
+    val msg = "could not create directory %s" format angled(javaFile)
+    requireSuccess(msg) { javaFile mkdir() }
+  }
+  def mkdirs: IO[Unit] = {
+    val msg = "could not create directory (tree) %s" format angled(javaFile)
+    requireSuccess(msg) { javaFile mkdirs() }
+  }
+  def renameTo(dest: PureFile): IO[Unit] = {
+    val msg = "could not rename %s to %s" format (angled(javaFile), angled(dest))
+    requireSuccess(msg) { javaFile renameTo dest.javaFile }
   }
 
   /* ########## difficult semantics for now ########## */
@@ -130,48 +139,36 @@ class PureFile(private val f: File)
   // - getCanonicalPath
   // - getParent
 
-  /* ########## custom ########## */
-  /*
-  def extension: Option[String] = ""
-  def sansExtension: String = ""
-  def basename: String = ""
-  */
-  /*
-  def find: IO[List[File]] = Nil.pure[IO]
-  def findFiltered(filter: File => Boolean): IO[List[File]] = Nil.pure[IO]
-  def findByGlob(glob: String): IO[List[File]] = Nil.pure[IO]
-  def findByGlobFiltered(
-    glob: String, filter: File => Boolean
-  ): IO[List[File]] = Nil.pure[IO]
-  def findByRegex(regex: String): IO[List[File]] = Nil.pure[IO]
-  def findByRegexFiltered(
-    regex: String, filter: File => Boolean
-  ): IO[List[File]] = Nil.pure[IO]
-  */
-
   /* ########## internal ########## */
   private[this] def angled(file: PureFile): String =
-    "<%s>" format file.getAbsoluteFile.getPath
+    "<%s>" format file.absolute.path
   private[this] def quoted(b: Boolean): String = "\"%s\"" format b
   private[this] def requireSuccess(msg: String)(bool: => Boolean): IO[Unit] =
     IO { if (bool == false) throw PureFileOperationException(msg) }
 }
 
+/** Conversions and typeclass instances for `PureFile`. */
 object PureFile {
 
   /* #### conversions #### */
-  implicit def fileToPureFile(f: File): PureFile = new PureFile(f)
+  /* Converts a `java.io.File` to a `PureFile`. */
+  implicit def pureFile(file: File): PureFile = new PureFile {
+    val javaFile = file
+  }
 
   /* #### typeclass instances ##### */
+  /* `scalaz.Order` instance for `PureFile`. */
   implicit def handleHasOrder: Order[PureFile] = new Order[PureFile] {
     override def order(lhs: PureFile, rhs: PureFile): Ordering = {
       import scalaz.std.anyVal.intInstance
       import scalaz.syntax.equal.ToEqualOps
-      val res = lhs compareTo rhs
+      val res = lhs.javaFile compareTo rhs.javaFile
       if (res < 0) LT else if (res === 0) EQ else GT
     }
     override def equalIsNatural = true
   }
+
+  /* `scalaz.Show` instance for `PureFile`. */
   implicit def handleHasShow: Show[PureFile] = Show.showFromToString[PureFile]
 }
 

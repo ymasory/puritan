@@ -18,6 +18,7 @@ be implemented using only public JDK functions. */
 - Puritan tightly integrates with Scalaz 7's types.
 - Puritan organizes code and modules similarly to Scalaz 7.
 - Puritan relies only on JDK 6, Scala 2.9 and Scalaz 7.
+- Puritan includes JDK 7's new IO functionality for projects requiring JDK 7.
 - Puritan is comprehensively documented, with full API documentation and an examples suite.
 - Puritan includes a comprehensive test suite.
 - Puritan is licensed under the Scala License, just like Scala and Scalaz.

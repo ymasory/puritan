@@ -14,7 +14,7 @@ brand new API.
 - Puritan uses **only the most primitive impure functions available** on the JVM.
 For example, `read` not `readLine`.
 Such JDK primitive functions often have `native` in their signature, or cannot
-be implemented using only public JDK functions. */
+be implemented using only public JDK functions.
 - Puritan tightly integrates with Scalaz 7's types.
 - Puritan organizes code and modules similarly to Scalaz 7.
 - Puritan relies only on JDK 6, Scala 2.9 and Scalaz 7.

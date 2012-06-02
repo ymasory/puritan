@@ -8,6 +8,9 @@ nicely integrated with Scalaz 7.
 
 ## Goals (for the future ... not there yet) ##
 - Puritan is made up of **only referentially transparent functions**, whether those functions are public or not.
+- Puritan is **familiar**, providing wrappers for impure Java and Scala
+functions that existing Scala and Scalaz developers can use without learning a
+brand new API.
 - Puritan uses **only the most primitive impure functions available** on the JVM.
 For example, `read` not `readLine`.
 Such JDK primitive functions often have `native` in their signature, or cannot

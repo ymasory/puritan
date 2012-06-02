@@ -1,8 +1,9 @@
-package com.yuvimasory.puritan
+package puritan
 
 import scalaz.Show
 import scalaz.effect.IO
 
+/** Simply mixes in the `Console` trait for easier access. */
 object Console extends Console
 
 trait Console {

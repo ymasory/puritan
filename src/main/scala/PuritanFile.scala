@@ -1,4 +1,4 @@
-package com.yuvimasory.puritan
+package puritan
 
 import java.io.File
 import java.net.URI
@@ -9,24 +9,31 @@ import scalaz.effect.IO
 
 /** Pure wrapper for exceptions thrown by `java.io.File` methods that return
   * a boolean to indicate success or failure. */
-case class PureFileOperationException(msg: String) extends RuntimeException(msg)
+case class PuritanFileOperationException(msg: String)
+  extends RuntimeException(msg)
 
 /** Pure wrapper for `java.io.File`. */
-sealed trait PureFile {
-
-  import PureFile.pureFile
+sealed trait PuritanFile {
+  import PuritanFile.AddFileOps
 
   val javaFile: File
 
   /* #### subtyping-related, so no Java File functionality is lost. #### */
   override def hashCode: Int = javaFile.hashCode
   override def toString: String = javaFile.toString
-  override def equals(that: AnyRef): Boolean = TODO //canEqual
+  override def equals(that: Any): Boolean = {
+    import scalaz.std.string.stringInstance
+    import scalaz.syntax.equal.ToEqualOps
+    that match {
+      case p: PuritanFile => path === p.path
+      case _ => false
+    }
+  }
 
   /* ########## pure Java methods, at least in OpenJDK ########## */
-  def absolute: PureFile = javaFile.getAbsoluteFile
+  def absolute: PuritanFile = javaFile.getAbsoluteFile.puritan
   def name: String = javaFile.getName
-  def parent: PureFile = javaFile.getParentFile
+  def parent: PuritanFile = javaFile.getParentFile.puritan
   def path: String = javaFile.getPath
   def isAbsolute: Boolean = javaFile.isAbsolute
   def toUri: URI = javaFile.toURI
@@ -40,9 +47,9 @@ sealed trait PureFile {
   def isRegularFile: IO[Boolean] = IO { javaFile.isFile }
   def isHidden: IO[Boolean] = IO { javaFile.isHidden }
 
-  def canonical: IO[PureFile] = IO { javaFile.getCanonicalFile }
-  def listFiles: IO[List[PureFile]] = IO {
-    javaFile.listFiles.toList.map { pureFile(_) }
+  def canonical: IO[PuritanFile] = IO { javaFile.getCanonicalFile.puritan }
+  def listFiles: IO[List[PuritanFile]] = IO {
+    javaFile.listFiles.toList.map { _.puritan }
   }
 
 
@@ -55,75 +62,75 @@ sealed trait PureFile {
 
   def changeLastModified(time: Long): IO[Unit] = {
     val msg = "could not set last modified %s on file %s" format (
-      time, angled(javaFile)
+      time, angled
     )
-    requireSuccess(msg) { javaFile setLastModified time }
+    require(msg) { javaFile setLastModified time }
   }
   def createRegularFile: IO[Unit] = {
-    val msg = "could not create new file %s" format angled(javaFile)
-    requireSuccess(msg) { javaFile createNewFile() }
+    val msg = "could not create new file %s" format angled
+    require(msg) { javaFile createNewFile() }
   }
   def delete: IO[Unit] = {
-    def msg = "could not delete file %s" format angled(javaFile)
-    requireSuccess(msg) { javaFile delete() }
+    def msg = "could not delete file %s" format angled
+    require(msg) { javaFile delete() }
   }
   def makeExecutable(executable: Boolean): IO[Unit] = {
     val msg = "could not set %s to executable state %s" format (
-      angled(javaFile), quoted(executable)
+      angled, executable.quoted
     )
-    requireSuccess(msg) { javaFile setExecutable executable }
+    require(msg) { javaFile setExecutable executable }
   }
   def makeReadable(readable: Boolean): IO[Unit] = {
     val msg = "could not file %s to readable state %s" format (
-      angled(javaFile), quoted(readable)
+      angled, readable.quoted
     )
-    requireSuccess(msg) { javaFile setReadable readable }
+    require(msg) { javaFile setReadable readable }
   }
   def makeReadableByOwnerOnly(readable: Boolean): IO[Unit] = {
     val msg = (
       "could not file %s to readable state %s for owner only" format (
-        angled(javaFile), quoted(readable)
+        angled, readable.quoted
       )
     )
-    requireSuccess(msg) { javaFile setReadable (readable, true) }
+    require(msg) { javaFile setReadable (readable, true) }
   }
   def makeReadOnly: IO[Unit] = {
-    val msg = "could not file %s to read-only" format angled(javaFile)
-    requireSuccess(msg) { javaFile setReadOnly() }
+    val msg = "could not file %s to read-only" format angled
+    require(msg) { javaFile setReadOnly() }
   }
   def makeWritable(writable: Boolean): IO[Unit] = {
     val msg = "could not file %s to writable state %s" format (
-      angled(javaFile), quoted(writable)
+      angled, writable.quoted
     )
-    requireSuccess(msg) { javaFile setWritable writable }
+    require(msg) { javaFile setWritable writable }
   }
   def makeWritableByOwnerOnly(writable: Boolean): IO[Unit] = {
     val msg = (
       "could not file %s to writable state %s for owner only" format (
-        angled(javaFile), quoted(writable)
+        angled, writable.quoted
       )
     )
-    requireSuccess(msg) { javaFile setWritable (writable, true) }
+    require(msg) { javaFile setWritable (writable, true) }
   }
   def makeExecutableByOwnerOnly(executable: Boolean): IO[Unit] = {
     val msg = (
       "could not set %s to executable state %s for owner only" format (
-        angled(javaFile), quoted(executable)
+        angled, executable.quoted
       )
     )
-    requireSuccess(msg) { javaFile setExecutable (executable, true) }
+    require(msg) { javaFile setExecutable (executable, true) }
   }
   def mkdir: IO[Unit] = {
-    val msg = "could not create directory %s" format angled(javaFile)
-    requireSuccess(msg) { javaFile mkdir() }
+    val msg = "could not create directory %s" format angled
+    require(msg) { javaFile mkdir() }
   }
   def mkdirs: IO[Unit] = {
-    val msg = "could not create directory (tree) %s" format angled(javaFile)
-    requireSuccess(msg) { javaFile mkdirs() }
+    val msg = "could not create directory (tree) %s" format angled
+    require(msg) { javaFile mkdirs() }
   }
-  def renameTo(dest: PureFile): IO[Unit] = {
-    val msg = "could not rename %s to %s" format (angled(javaFile), angled(dest))
-    requireSuccess(msg) { javaFile renameTo dest.javaFile }
+  def renameTo(dest: PuritanFile): IO[Unit] = {
+    val msg = "could not rename %s to %s" format (angled, dest.angled)
+    require(msg) { javaFile renameTo dest.javaFile }
   }
 
   /* ########## difficult semantics for now ########## */
@@ -139,36 +146,67 @@ sealed trait PureFile {
   // - getCanonicalPath
   // - getParent
 
+  /* ########## custom ########## */
+  /*
+  def extension: Option[String] = ""
+  def sansExtension: String = ""
+  def basename: String = ""
+  */
+  /*
+  def find: IO[List[File]] = Nil.pure[IO]
+  def findFiltered(filter: File => Boolean): IO[List[File]] = Nil.pure[IO]
+  def findByGlob(glob: String): IO[List[File]] = Nil.pure[IO]
+  def findByGlobFiltered(
+    glob: String, filter: File => Boolean
+  ): IO[List[File]] = Nil.pure[IO]
+  def findByRegex(regex: String): IO[List[File]] = Nil.pure[IO]
+  def findByRegexFiltered(
+    regex: String, filter: File => Boolean
+  ): IO[List[File]] = Nil.pure[IO]
+  */
+
   /* ########## internal ########## */
-  private[this] def angled(file: PureFile): String =
-    "<%s>" format file.absolute.path
-  private[this] def quoted(b: Boolean): String = "\"%s\"" format b
-  private[this] def requireSuccess(msg: String)(bool: => Boolean): IO[Unit] =
-    IO { if (bool == false) throw PureFileOperationException(msg) }
+  private[puritan] def angled: String = "<%s>" format absolute.path
+
+  private[puritan] class BooleanOps(bool: Boolean) {
+    def quoted = "\"%s\"" format bool
+  }
+  private[puritan] implicit def AddBooleanOps(bool: Boolean): BooleanOps =
+    new BooleanOps(bool)
+
+  private[puritan] def require(msg: String)(bool: => Boolean): IO[Unit] = TODO
 }
 
-/** Conversions and typeclass instances for `PureFile`. */
-object PureFile {
+/** Conversions and typeclass instances for `PuritanFile`. */
+object PuritanFile {
 
-  /* #### conversions #### */
-  /* Converts a `java.io.File` to a `PureFile`. */
-  implicit def pureFile(file: File): PureFile = new PureFile {
-    val javaFile = file
+  /* #### conversions ##### */
+  /** Pimps a `java.io.File` with the `FileOps` functions. */
+  implicit def AddFileOps(file: File): FileOps = new FileOps {
+    val f = file
   }
 
   /* #### typeclass instances ##### */
-  /* `scalaz.Order` instance for `PureFile`. */
-  implicit def handleHasOrder: Order[PureFile] = new Order[PureFile] {
-    override def order(lhs: PureFile, rhs: PureFile): Ordering = {
-      import scalaz.std.anyVal.intInstance
-      import scalaz.syntax.equal.ToEqualOps
-      val res = lhs.javaFile compareTo rhs.javaFile
-      if (res < 0) LT else if (res === 0) EQ else GT
+  /* `scalaz.Order` instance for `PuritanFile`. */
+  implicit def PuritanFileHasOrder: Order[PuritanFile] =
+    new Order[PuritanFile] {
+      override def order(lhs: PuritanFile, rhs: PuritanFile): Ordering = {
+        import scalaz.std.anyVal.intInstance
+        import scalaz.syntax.equal.ToEqualOps
+        val res = lhs.javaFile compareTo rhs.javaFile
+        if (res < 0) LT else if (res === 0) EQ else GT
+      }
+      override def equalIsNatural = true
     }
-    override def equalIsNatural = true
-  }
 
-  /* `scalaz.Show` instance for `PureFile`. */
-  implicit def handleHasShow: Show[PureFile] = Show.showFromToString[PureFile]
+  /* `scalaz.Show` instance for `PuritanFile`. */
+  implicit def PuritanFileHasShow: Show[PuritanFile] =
+    Show.showFromToString[PuritanFile]
 }
 
+sealed trait FileOps {
+  val f: File
+
+  /* Converts a `java.io.File` to a `PuritanFile`. */
+  def puritan: PuritanFile = new PuritanFile { val javaFile = f }
+}

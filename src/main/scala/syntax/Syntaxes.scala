@@ -2,8 +2,12 @@ package com.yuvimasory.puritan
 package syntax
 
 trait Syntaxes {
-  object handle {
-    implicit def AddHandleSyntax(h: Handle): HandleSyntax = new HandleSyntax(h)
-    class HandleSyntax(h: Handle)
+
+  object pureFile {
+
+    implicit def AddPureFileSyntax(h: PureFile): PureFileSyntax =
+      new PureFileSyntax(h)
+
+    class PureFileSyntax(h: PureFile)
   } 
 }

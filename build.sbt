@@ -16,8 +16,8 @@ javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
 
 //dependencies
 libraryDependencies ++= Seq (
-  "org.scalaz" %% "scalaz-effect" % "7.0-SNAPSHOT",
-  "org.scalacheck" %% "scalacheck" % "1.9" % "test"
+  "org.scalaz" %% "scalaz-effect" % "7.0-SNAPSHOT"
+  // "org.scalacheck" %% "scalacheck" % "1.9" % "test"
 )
 
 //improve REPL

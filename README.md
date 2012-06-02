@@ -22,13 +22,14 @@ cd puritan
 sbt test # MUST USE SBT 0.11.3!!
 ```
 
-## Standards & Goals ##
-- All functions should be referentially transparent.
-- Only the most primitive impure functions should be used from Java.
-Everything higher level should be built purely within Puritan.
-- Tight integration with Scalaz 7.
-- Code/module organization similar to Scalaz 7's.
-- No dependencies other than Scala and Scalaz.
-- Comprehensive documentation, with examples, prior to any release.
-- All code licensed under the Scala License, just like Scala and Scalaz.
-- Comprehensive test suite.
+## Goals (for the future ... not there yet) ##
+- Puritan is made up of **only referentially transparent functions**, whether those functions are public or not.
+- Puritan uses only the most primitive impure functions available on the JVM.
+For example, `read` not `readLine`.
+Such JDK primitive functions always have `native` in their signature.
+- Puritan tightly integrates with Scalaz 7's types.
+- Puritan organizes code and modules similarly to Scalaz 7.
+- Puritan relies only on JDK 6, Scala 2.9 and Scalaz 7.
+- Puritan is comprehensively documented, with full API documentation and an examples suite.
+- Puritan includes a comprehensive test suite.
+- Puritan is licensed under the Scala License, just like Scala and Scalaz.

@@ -6,6 +6,5 @@ import scalaz.effect.IO
 import scalaz.effect.IO.io
 
 object FileSystem {
-  /* #### Jdk functions #### */
   def listRoots: IO[List[File]] = IO { (File listRoots()).toList }
 }

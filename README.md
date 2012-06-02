@@ -1,3 +1,4 @@
+![Puritan](https://github.com/downloads/ymasory/puritan/scarlet-letter.jpg)
 # Puritan: Referentially Transparent IO for Scala #
 
 ## About ##

@@ -41,6 +41,6 @@ trait Console {
   def putShow[A:Show]: IO[A] = TODO
 }
 
-/** Simply mixes in the `Console` trait for easier access. */
+/** Simply mixes in the [[puritan.Console]] trait for easier access. */
 object Console extends Console
 

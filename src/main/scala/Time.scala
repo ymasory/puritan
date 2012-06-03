@@ -8,5 +8,5 @@ trait Time {
   def nanoTime: IO[Long] = IO { System nanoTime() }
 }
 
-/** Simply mixes in the `Time` trait for easier access. */
+/** Simply mixes in the [[puritan.Time]] trait for easier access. */
 object Time extends Time

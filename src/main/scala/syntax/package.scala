@@ -1,5 +1,5 @@
 package puritan
 
-/** Simply mixes in `Syntaxes` for easy access. */
+/** Simply mixes in the [[puritan.Syntaxes]] trait for easy access. */
 package object syntax extends Syntaxes
 

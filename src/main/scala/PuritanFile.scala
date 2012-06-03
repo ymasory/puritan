@@ -3,7 +3,7 @@ package puritan
 import java.io.File
 import java.net.URI
 
-import scalaz.{ Equal, Order, Ordering, Show }
+import scalaz.{ Equal, Order, Ordering, Show, Validation }
 import scalaz.Ordering.{ EQ, GT, LT }
 import scalaz.effect.IO
 
@@ -147,23 +147,25 @@ sealed trait PuritanFile {
   // - getParent
 
   /* ########## custom ########## */
-  /*
-  def extension: Option[String] = ""
-  def sansExtension: String = ""
-  def basename: String = ""
-  */
-  /*
-  def find: IO[List[File]] = Nil.pure[IO]
-  def findFiltered(filter: File => Boolean): IO[List[File]] = Nil.pure[IO]
-  def findByGlob(glob: String): IO[List[File]] = Nil.pure[IO]
-  def findByGlobFiltered(
-    glob: String, filter: File => Boolean
-  ): IO[List[File]] = Nil.pure[IO]
-  def findByRegex(regex: String): IO[List[File]] = Nil.pure[IO]
-  def findByRegexFiltered(
-    regex: String, filter: File => Boolean
-  ): IO[List[File]] = Nil.pure[IO]
-  */
+  def splitExtension: (String, String) = TODO
+  def takeExtension: String = TODO
+  def replaceExtension(ext: String): PuritanFile = TODO
+  def dropExtension: PuritanFile = TODO
+  def addExtension(ext: String): PuritanFile = TODO
+  def hasExtension: Boolean = TODO
+
+  def splitDrive: (PuritanFile, PuritanFile) = TODO
+  def joinDrive: (PuritanFile, PuritanFile) = TODO
+  def takeDrive: PuritanFile = TODO
+  def hasDrive: Boolean = TODO
+  def dropDrive: PuritanFile = TODO
+  def isDrive: PuritanFile = TODO
+
+  def isRelative: Boolean = TODO
+
+  def combine(that: PuritanFile): PuritanFile = TODO
+
+  def basename: String = TODO
 
   /* ########## internal ########## */
   private[puritan] def angled: String = "<%s>" format absolute.path

@@ -9,9 +9,15 @@ object Exit {
   def exitSuccess: IO[Nothing] = TODO
 }
 
-case class ExitCode(code: Int)
-object ExitSuccess extends ExitCode(0)
-object ExitFail extends ExitCode(1)
+sealed trait ExitCode {
+  def code: Int = this match {
+    case ExitSuccess => 0
+    case ExitFailure => 1
+  }
+}
+
+case object ExitSuccess extends ExitCode
+case object ExitFail extends ExitCode
 
 object ExitCode {
   def ExitCodeHasEqual: Equal[ExitCode] = TODO

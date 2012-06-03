@@ -3,9 +3,7 @@ package puritan
 import scalaz.Show
 import scalaz.effect.IO
 
-/** Simply mixes in the `Console` trait for easier access. */
-object Console extends Console
-
+/** Access to stdout, stderr, stdin. */
 trait Console {
   /** Read a single character from stdin */
   def readChar: IO[Char] = TODO
@@ -42,3 +40,7 @@ trait Console {
   /** Print a float to stdout using `Show.shows`. */
   def putShow[A:Show]: IO[A] = TODO
 }
+
+/** Simply mixes in the `Console` trait for easier access. */
+object Console extends Console
+

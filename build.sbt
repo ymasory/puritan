@@ -71,15 +71,15 @@ pomExtra := (
 
 pgpPassphrase := Some("".toCharArray)
 
-pgpSecretRing := file("")
-
-pgpPublicRing := file("")
-
 pgpSigningKey := Some(0L)
 
-credentials += Credentials(
-  "Sonatype Nexus Repository Manager",
-  "oss.sonatype.org",
-  "ymasory@gmail.com",
-  IO read file("")
-)
+// pgpSecretRing := file("")
+
+// pgpPublicRing := file("")
+
+// credentials += Credentials(
+//   "Sonatype Nexus Repository Manager",
+//   "oss.sonatype.org",
+//   "ymasory@gmail.com",
+//   IO read file("")
+// )

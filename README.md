@@ -4,7 +4,7 @@ alt="The Scarlet Letter" title="The Scarlet Letter" align="right" />
 
 > “There are many things in this world that a child must not ask about ...
 > When an uninstructed multitude attempts to see with its eyes, it is exceedingly apt to be deceived.”
-> - *The Scarlet Letter*, Nathaniel Hawthorne <br><br><br><br><br><br><br><br>
+> <br><br>- *The Scarlet Letter*, Nathaniel Hawthorne <br><br><br><br><br><br><br><br>
 
 Puritan lets you do IO with [Scalaz 7](https://github.com/scalaz/scalaz/tree/scalaz-seven) without compromising on functional purity. It's also a great way to annoy everyone.
 

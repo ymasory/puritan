@@ -9,7 +9,7 @@ import scalaz.effect.IO
 
 /** Pure wrapper for exceptions thrown by `java.io.File` methods that return
   * a boolean to indicate success or failure. */
-case class FilePathOperationException(msg: String)
+final case class FilePathOperationException(msg: String)
   extends RuntimeException(msg)
 
 /** Pure wrapper for `java.io.File`. */

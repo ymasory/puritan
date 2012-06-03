@@ -9,11 +9,12 @@ object Exit {
   def exitSuccess: IO[Nothing] = TODO
 }
 
-case class ExitCode(code: Int)
-object ExitSuccess extends ExitCode(0)
-object ExitFail extends ExitCode(1)
+final case class ExitCode(code: Int)
 
 object ExitCode {
+  val ExitSuccess = ExitCode(0)
+  val ExitFail = ExitCode(1)
+
   def ExitCodeHasEqual: Equal[ExitCode] = TODO
   def ExitCodeHasOrder: Order[ExitCode] = TODO
 }

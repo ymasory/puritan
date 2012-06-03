@@ -1,10 +1,12 @@
 # Puritan: Referentially Transparent IO for Scala #
-![Puritan](https://github.com/downloads/ymasory/puritan/scarlet-letter.jpg)
+<img src="https://github.com/downloads/ymasory/puritan/scarlet-letter.jpg"
+alt="The Scarlet Letter" title="The Scarlet Letter" align="right" />
 
-## About ##
-It's tough using `scalaz.IO` in the impure JVM environment.
-Puritan aims to fix that, providing wrappers and completely pure IO functions,
-nicely integrated with Scalaz 7.
+> “There are many things in this world that a child must not ask about ...
+> When an uninstructed multitude attempts to see with its eyes, it is exceedingly apt to be deceived.”
+> - *The Scarlet Letter*, Nathaniel Hawthorne <br><br><br><br><br><br><br><br>
+
+Puritan lets you do IO with [Scalaz 7](https://github.com/scalaz/scalaz/tree/scalaz-seven) without compromising on functional purity. It's also a great way to annoy everyone.
 
 ## Goals (for the future ... not there yet) ##
 - Puritan is made up of **only referentially transparent functions**, whether those functions are public or not.

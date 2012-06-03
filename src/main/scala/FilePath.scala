@@ -9,12 +9,12 @@ import scalaz.effect.IO
 
 /** Pure wrapper for exceptions thrown by `java.io.File` methods that return
   * a boolean to indicate success or failure. */
-case class PuritanFileOperationException(msg: String)
+case class FilePathOperationException(msg: String)
   extends RuntimeException(msg)
 
 /** Pure wrapper for `java.io.File`. */
-sealed trait PuritanFile {
-  import PuritanFile.AddFileOps
+sealed trait FilePath {
+  import FilePath.AddFileOps
 
   val javaFile: File
 
@@ -25,15 +25,15 @@ sealed trait PuritanFile {
     import scalaz.std.string.stringInstance
     import scalaz.syntax.equal.ToEqualOps
     that match {
-      case p: PuritanFile => path === p.path
+      case p: FilePath => path === p.path
       case _ => false
     }
   }
 
   /* ########## pure Java methods, at least in OpenJDK ########## */
-  def absolute: PuritanFile = javaFile.getAbsoluteFile.puritan
+  def absolute: FilePath = javaFile.getAbsoluteFile.puritan
   def name: String = javaFile.getName
-  def parent: PuritanFile = javaFile.getParentFile.puritan
+  def parent: FilePath = javaFile.getParentFile.puritan
   def path: String = javaFile.getPath
   def isAbsolute: Boolean = javaFile.isAbsolute
   def toUri: URI = javaFile.toURI
@@ -47,8 +47,8 @@ sealed trait PuritanFile {
   def isRegularFile: IO[Boolean] = IO { javaFile.isFile }
   def isHidden: IO[Boolean] = IO { javaFile.isHidden }
 
-  def canonical: IO[PuritanFile] = IO { javaFile.getCanonicalFile.puritan }
-  def listFiles: IO[List[PuritanFile]] = IO {
+  def canonical: IO[FilePath] = IO { javaFile.getCanonicalFile.puritan }
+  def listFiles: IO[List[FilePath]] = IO {
     javaFile.listFiles.toList.map { _.puritan }
   }
 
@@ -128,7 +128,7 @@ sealed trait PuritanFile {
     val msg = "could not create directory (tree) %s" format angled
     require(msg) { javaFile mkdirs() }
   }
-  def renameTo(dest: PuritanFile): IO[Unit] = {
+  def renameTo(dest: FilePath): IO[Unit] = {
     val msg = "could not rename %s to %s" format (angled, dest.angled)
     require(msg) { javaFile renameTo dest.javaFile }
   }
@@ -149,21 +149,21 @@ sealed trait PuritanFile {
   /* ########## custom ########## */
   def splitExtension: (String, String) = TODO
   def takeExtension: String = TODO
-  def replaceExtension(ext: String): PuritanFile = TODO
-  def dropExtension: PuritanFile = TODO
-  def addExtension(ext: String): PuritanFile = TODO
+  def replaceExtension(ext: String): FilePath = TODO
+  def dropExtension: FilePath = TODO
+  def addExtension(ext: String): FilePath = TODO
   def hasExtension: Boolean = TODO
 
-  def splitDrive: (PuritanFile, PuritanFile) = TODO
-  def joinDrive: (PuritanFile, PuritanFile) = TODO
-  def takeDrive: PuritanFile = TODO
+  def splitDrive: (FilePath, FilePath) = TODO
+  def joinDrive: (FilePath, FilePath) = TODO
+  def takeDrive: FilePath = TODO
   def hasDrive: Boolean = TODO
-  def dropDrive: PuritanFile = TODO
-  def isDrive: PuritanFile = TODO
+  def dropDrive: FilePath = TODO
+  def isDrive: FilePath = TODO
 
   def isRelative: Boolean = TODO
 
-  def combine(that: PuritanFile): PuritanFile = TODO
+  def combine(that: FilePath): FilePath = TODO
 
   def basename: String = TODO
 
@@ -179,8 +179,8 @@ sealed trait PuritanFile {
   private[puritan] def require(msg: String)(bool: => Boolean): IO[Unit] = TODO
 }
 
-/** Conversions and typeclass instances for `PuritanFile`. */
-object PuritanFile {
+/** Conversions and typeclass instances for `FilePath`. */
+object FilePath {
 
   /* #### conversions ##### */
   /** Pimps a `java.io.File` with the `FileOps` functions. */
@@ -189,10 +189,10 @@ object PuritanFile {
   }
 
   /* #### typeclass instances ##### */
-  /* `scalaz.Order` instance for `PuritanFile`. */
-  implicit def PuritanFileHasOrder: Order[PuritanFile] =
-    new Order[PuritanFile] {
-      override def order(lhs: PuritanFile, rhs: PuritanFile): Ordering = {
+  /* `scalaz.Order` instance for `FilePath`. */
+  implicit def FilePathHasOrder: Order[FilePath] =
+    new Order[FilePath] {
+      override def order(lhs: FilePath, rhs: FilePath): Ordering = {
         import scalaz.std.anyVal.intInstance
         import scalaz.syntax.equal.ToEqualOps
         val res = lhs.javaFile compareTo rhs.javaFile
@@ -201,14 +201,14 @@ object PuritanFile {
       override def equalIsNatural = true
     }
 
-  /* `scalaz.Show` instance for `PuritanFile`. */
-  implicit def PuritanFileHasShow: Show[PuritanFile] =
-    Show.showFromToString[PuritanFile]
+  /* `scalaz.Show` instance for `FilePath`. */
+  implicit def FilePathHasShow: Show[FilePath] =
+    Show.showFromToString[FilePath]
 }
 
 sealed trait FileOps {
   val f: File
 
-  /* Converts a `java.io.File` to a `PuritanFile`. */
-  def puritan: PuritanFile = new PuritanFile { val javaFile = f }
+  /* Converts a `java.io.File` to a `FilePath`. */
+  def puritan: FilePath = new FilePath { val javaFile = f }
 }

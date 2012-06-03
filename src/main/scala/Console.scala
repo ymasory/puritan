@@ -4,11 +4,12 @@ import scalaz.Show
 import scalaz.effect.IO
 
 /** Access to stdout, stderr, stdin. */
-trait Console {
+object Console {
   /** Read a single character from stdin */
   def readChar: IO[Char] = TODO
   /** Read a single line from stdin, without line terminators. */
   def readLine: IO[String] = TODO
+  def readPassword: IO[String] = TODO
 
   /** Print a single character to stdout. */
   def putChar: IO[Char] = TODO
@@ -40,7 +41,3 @@ trait Console {
   /** Print a float to stdout using `Show.shows`. */
   def putShow[A:Show]: IO[A] = TODO
 }
-
-/** Simply mixes in the [[puritan.Console]] trait for easier access. */
-object Console extends Console
-

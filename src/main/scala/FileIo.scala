@@ -9,18 +9,18 @@ object FileIo extends FileIo
 
 /** High-level operations on files. */
 trait FileIo {
-  def readFile(file: PuritanFile): IO[String] = TODO
+  def readFile(file: FilePath): IO[String] = TODO
   def readFileCharset(
-    file: PuritanFile, charset: PuritanCharset
+    file: FilePath, charset: PuritanCharset
   ): IO[String] = TODO
 
-  def writeFile(file: PuritanFile, contents: String): IO[Unit] = TODO
+  def writeFile(file: FilePath, contents: String): IO[Unit] = TODO
   def writeFileCharset(
-    file: PuritanFile, contents: String, charset: PuritanCharset
+    file: FilePath, contents: String, charset: PuritanCharset
   ): IO[Unit] = TODO
 
-  def copyRegularFile(src: PuritanFile, dest: PuritanFile) = TODO
-  def copyDirectory(src: PuritanFile, dest: PuritanFile) = TODO
+  def copyRegularFile(src: FilePath, dest: FilePath) = TODO
+  def copyDirectory(src: FilePath, dest: FilePath) = TODO
 
-  def moveDirectory(src: PuritanFile, dest: PuritanFile) = TODO
+  def moveDirectory(src: FilePath, dest: FilePath) = TODO
 }
